@@ -1,0 +1,67 @@
+---
+title: "Untitled"
+author: ""
+date: "24/01/2021"
+output: word_document
+---
+
+```{r}
+library(ggmap)
+library(sp)
+library(rgeos)
+library(readr)
+library(lubridate)
+library(RColorBrewer)
+library(classInt)
+library(maptools)
+library(ggplot2)
+library(leaflet)
+library(dplyr)
+library(magrittr)
+library(rgdal)
+
+
+
+spatialanalysisfunction<-function(data,dsn,layer){
+  
+  attach(data)
+  data<-filter(data, lon!="NA")
+  Coordinates<-SpatialPoints(data[, c("lon","lat")])#extracting coordinates
+  spatialData<-SpatialPointsDataFrame(Coordinates, data)#combining coordinates with data
+ 
+ proj4string(spatialData)<-CRS("+proj=longlat +ellps=WGS84")
+ 
+ saveRDS(spatialData, "spatialData.rds")
+ 
+ 
+ data_shp<-readOGR(dsn = dsn,
+                   layer = layer)
+
+ plot(data_shp, col="grey", axes=TRUE)
+ plot(spatialData, pch=23,bg="red",cex=1,add=T)
+  
+}
+
+#demonstation of the  of the function
+#creating a function that extracts data and stores it in a new enviroment
+getData<-function(...){
+  e<-new.env()
+  name<-data(...,envir = e)[1]
+  e[[name]]
+}
+
+crimeData<-getData("crime")
+
+#incase of a zipped shapefile in the same folder as your project  unzip it using the following function.
+unzipped<- function(zipped_data){
+  unzip(zipped_data,exdir = '.data')
+}
+unzipped('Texas_State_Boundary-shp.zip')
+
+visualisation<-spatialanalysisfunction(crimeData,'~/.data','State')
+visualisation
+
+
+
+```
+
